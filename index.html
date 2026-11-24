@@ -1,0 +1,1815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F4F4F1">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>练 · 训练打卡</title>
+<style>
+:root{
+  --bg:#F4F4F1; --card:#FFFFFF; --ink:#17181A; --sub:#71737A; --line:#E6E6E0;
+  --accent:#E8542F; --accent-soft:#FDEDE8; --rest:#2F8F6B; --rest-soft:#E8F4EF;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 10px 30px rgba(0,0,0,.06);
+  --r:20px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#121417; --card:#1C1F24; --ink:#F2F3F4; --sub:#9AA0A8; --line:#2B3037;
+    --accent:#FF6F4A; --accent-soft:#33211C; --rest:#48C08C; --rest-soft:#16302A;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overscroll-behavior:none}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;
+}
+#root{max-width:520px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;
+  padding:calc(14px + env(safe-area-inset-top)) 16px calc(84px + env(safe-area-inset-bottom))}
+#root.full{padding:calc(8px + env(safe-area-inset-top)) 16px calc(12px + env(safe-area-inset-bottom))}
+#root>*{min-width:0;max-width:100%}
+
+.h1{font-size:27px;font-weight:750;letter-spacing:-.025em;margin:0}
+.h2{font-size:19px;font-weight:700;letter-spacing:-.015em;margin:0}
+.sub{color:var(--sub);font-size:13.5px;margin:0}
+.small{font-size:12.5px;color:var(--sub)}
+.mono{font-variant-numeric:tabular-nums}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:18px;box-shadow:var(--shadow)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:10px;align-items:center;min-width:0}
+.row>*{min-width:0}
+.row>.btn{flex:1 1 0;width:auto}
+.between{display:flex;justify-content:space-between;align-items:center;gap:10px;min-width:0}
+.between>*{min-width:0}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;
+  min-height:56px;border-radius:16px;border:1px solid transparent;font-size:17.5px;font-weight:650;
+  font-family:inherit;color:var(--ink);background:var(--card);cursor:pointer;transition:transform .08s}
+.btn:active{transform:scale(.982)}
+.btn.primary{background:var(--accent);color:#fff;box-shadow:0 8px 22px rgba(232,84,47,.26);font-size:19px;min-height:64px}
+.btn.rest{background:var(--rest);color:#fff;box-shadow:0 8px 22px rgba(47,143,107,.22);font-size:19px;min-height:64px}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn.sm{min-height:42px;font-size:14.5px;border-radius:12px;font-weight:600}
+.btn.tiny{min-height:34px;font-size:13px;border-radius:10px;padding:0 12px;width:auto;font-weight:600}
+.btn[disabled]{opacity:.38;pointer-events:none}
+
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--bg);
+  border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+.tabbar .in{display:flex;width:100%;max-width:520px;margin:0 auto;gap:2px}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;
+  border:0;background:none;color:var(--sub);font-size:11px;font-family:inherit;cursor:pointer;border-radius:12px}
+.tab.on{color:var(--accent)}
+.tab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* 训练页 */
+.train{flex:1;display:flex;flex-direction:column;min-height:0}
+.thead{display:flex;align-items:center;gap:12px;padding:4px 0 2px}
+.xbtn{width:38px;height:38px;flex:0 0 38px;border-radius:50%;border:1px solid var(--line);
+  background:var(--card);color:var(--sub);font-size:17px;line-height:1;cursor:pointer}
+.tprog{flex:1;min-width:0}
+.tbar{height:5px;border-radius:99px;background:var(--line);overflow:hidden;margin-bottom:5px}
+.tbar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
+.tname{font-size:29px;font-weight:750;letter-spacing:-.03em;margin:16px 0 6px;line-height:1.2}
+.tname small{font-size:14px;font-weight:600;color:var(--sub);letter-spacing:0;margin-left:6px}
+.tmeta{font-size:14.5px;color:var(--sub)}
+.tmeta b{color:var(--ink);font-weight:700}
+
+.ringwrap{position:relative;display:flex;align-items:center;justify-content:center;
+  flex:1;min-height:250px;margin:4px 0}
+.ringwrap svg{position:absolute;width:min(74vw,272px);height:min(74vw,272px);transform:rotate(-90deg)}
+.rtrack{fill:none;stroke:var(--line);stroke-width:12}
+.rbar{fill:none;stroke:var(--accent);stroke-width:12;stroke-linecap:round;
+  transition:stroke-dashoffset .1s linear,stroke .3s}
+.rbar.rest{stroke:var(--rest)}
+.ringtxt{position:relative;text-align:center;padding:0 24px}
+.bignum{font-size:62px;font-weight:750;line-height:1;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.bignum.sm{font-size:46px;letter-spacing:-.03em}
+.bigunit{font-size:16px;font-weight:650;color:var(--sub);margin-top:4px}
+.ringlabel{font-size:13px;color:var(--sub);margin-bottom:6px;font-weight:600;letter-spacing:.02em}
+.ringtxt .nx{font-size:11.5px;line-height:1.45;color:var(--sub);margin:6px auto 0;max-width:170px}
+
+.thow{margin:2px 0 10px}
+.thow summary{font-size:13.5px;color:var(--sub);cursor:pointer;list-style:none;padding:6px 0}
+.thow summary::-webkit-details-marker{display:none}
+.thow .body{font-size:14px;line-height:1.62;color:var(--ink);padding:2px 0 8px}
+.thow .tip{font-size:13px;color:var(--sub);border-left:2px solid var(--line);padding-left:10px;margin-top:6px}
+.tactions{display:flex;flex-direction:column;gap:9px;padding-bottom:2px}
+.taux{display:flex;gap:9px}
+
+/* 语录 */
+.tq{margin:2px 0 10px;padding:11px 13px;border-radius:14px;background:var(--bg);
+  border:1px solid var(--line)}
+.tq .qcn{font-size:14.5px;line-height:1.56;font-weight:650}
+.tq .qen{font-size:12.5px;line-height:1.52;color:var(--sub);margin-top:6px;font-style:italic}
+.tq .qsrc{font-size:11.5px;color:var(--sub);margin-top:6px}
+.tq:not(.big) .qen{display:none}
+.tq:not(.big) .qcn.ch + .qen{display:block;margin-top:4px;font-size:11.5px}
+.tq.big{background:var(--card);padding:14px 15px;box-shadow:var(--shadow)}
+.tq.big .qcn{font-size:16.5px;line-height:1.62;font-weight:700;letter-spacing:-.005em}
+.tq .qcn.ch{font-size:16px;font-weight:800;letter-spacing:.045em}
+.tq .qcn .nw{white-space:nowrap}
+.tq.big .qcn.ch{font-size:19.5px;line-height:1.5;font-weight:800;letter-spacing:.05em}
+.tq.big .qen{margin-top:8px}
+.tq.big .qsrc{margin-top:9px}
+
+/* 矮屏（≤720px 高）收紧一档，否则长语录会把按钮顶出屏幕 */
+@media (max-height:720px){
+  .tname{font-size:24px;margin:8px 0 4px}
+  .ringwrap{min-height:196px;margin:2px 0}
+  .ringwrap svg{width:min(60vw,204px);height:min(60vw,204px)}
+  .bignum{font-size:50px}
+  .bignum.sm{font-size:38px}
+  .tq{margin:0 0 8px;padding:9px 11px}
+  .tq .qcn{font-size:13.5px;line-height:1.5}
+  .tq .qcn.ch{font-size:14.5px}
+  .tq.big{padding:11px 12px}
+  .tq.big .qcn{font-size:15px;line-height:1.55}
+  .tq.big .qen{font-size:11px;line-height:1.45;margin-top:5px}
+  .tq.big .qsrc{margin-top:6px;font-size:10.5px}
+  .tactions{gap:7px}
+}
+
+/* 列表 */
+.li{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.li:last-child{border-bottom:0}
+.li .idx{width:26px;flex:0 0 26px;font-size:13px;color:var(--sub);font-variant-numeric:tabular-nums}
+.li .mid{flex:1;min-width:0}
+.li .nm{font-size:15.5px;font-weight:600}
+.li .dt{font-size:12.5px;color:var(--sub)}
+
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:99px;
+  background:var(--accent-soft);color:var(--accent);font-size:12.5px;font-weight:650}
+.chip.gray{background:var(--bg);color:var(--sub);border:1px solid var(--line)}
+
+.daycard{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.daycard:last-child{border-bottom:0}
+.daycard .dnum{width:34px;height:34px;flex:0 0 34px;border-radius:10px;background:var(--accent-soft);
+  color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:750}
+.daycard .mid{flex:1;min-width:0}
+
+.heat{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:repeat(7,auto);
+  grid-auto-flow:column;gap:3px;margin-top:4px;width:100%}
+.heat i{width:100%;aspect-ratio:1;border-radius:3px;background:var(--line);display:block}
+.heat i.l1{background:rgba(47,143,107,.34)}
+.heat i.l2{background:rgba(47,143,107,.62)}
+.heat i.l3{background:var(--rest)}
+.heat i.today{outline:1.5px solid var(--accent);outline-offset:1px}
+
+.stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stat3 .v{font-size:22px;font-weight:750;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.stat3 .k{font-size:11.5px;color:var(--sub);margin-top:1px}
+
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.wd{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 1px;text-align:center;overflow:hidden}
+.wd b{display:block;font-size:12.5px;font-weight:700;color:var(--sub)}
+.wd span{display:block;font-size:10.5px;color:var(--sub);margin-top:3px;white-space:nowrap}
+.wd.rest span{color:#B9BBC0}
+.wd.rest{background:transparent;border-style:dashed}
+.wd.done{background:var(--rest-soft);border-color:transparent}
+.wd.done b,.wd.done span{color:var(--rest)}
+.wd.today{outline:1.5px solid var(--accent);outline-offset:1px}
+
+/* 弹层 */
+.modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;
+  justify-content:center;padding:16px 16px calc(16px + env(safe-area-inset-bottom));animation:fade .18s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.mbox{background:var(--card);border-radius:22px;padding:18px;width:100%;max-width:520px;
+  max-height:84dvh;overflow:auto;animation:up .22s cubic-bezier(.2,.8,.3,1)}
+@keyframes up{from{transform:translateY(18px);opacity:.6}to{transform:none;opacity:1}}
+textarea{width:100%;min-height:170px;border-radius:12px;border:1px solid var(--line);background:var(--bg);
+  color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;padding:10px;resize:vertical}
+.datein{width:100%;min-height:54px;border-radius:12px;border:1px solid var(--line);background:var(--bg);
+  color:var(--ink);font-size:17px;font-family:inherit;padding:0 12px;display:block}
+
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:var(--bg);
+  color:var(--ink);font-size:15px;line-height:1;font-family:inherit;cursor:pointer;padding:0}
+.stepper span{min-width:30px;text-align:center;font-size:13.5px;font-variant-numeric:tabular-nums}
+
+.empty{text-align:center;padding:34px 16px;color:var(--sub);font-size:14px}
+.hr{height:1px;background:var(--line);margin:14px 0}
+.tagrow{display:flex;flex-wrap:wrap;gap:6px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+'use strict';
+
+/* =========================================================
+   1. 内置计划（占位模板 —— 整块可替换，也可从界面导入）
+   m:'r' 次数 | m:'t' 计时（秒）
+   t: 目标值  sets: 组数  rest: 组间歇（秒）
+   ========================================================= */
+var PLANS = [{
+  id: 'main', name: '标准力量 + 慢跑', sub: '周一三五力量 · 周二六慢跑 · 周四周日休息',
+  freq: '每周 5 练 2 休',
+  days: [
+    { name:'周一 · 标准力量', short:'力量', dow:[1], min:55, circuit:false, exercises:[
+      { n:'引体向上', m:'r', t:4, sets:3, rest:120,
+        how:'正手握杠略宽于肩，先沉肩再拉，下巴过杠即可，下放控制 2 秒到手臂接近伸直。',
+        tip:'每组 3–5 次都算达标，能多做就多做。连 3 次都做不满，就用弹力带辅助，或只做离心：跳上去、用 5 秒慢慢放下。' },
+      { n:'俯卧撑', m:'r', t:12, sets:3, rest:90,
+        how:'手掌略宽于肩，肘与身体约 45 度，胸口接近地面再推起，臀腹收紧让身体成一条线。',
+        tip:'目标区间 10–15 次。最后一两次明显吃力，就是合适的难度。' },
+      { n:'哑铃深蹲', m:'r', t:11, sets:3, rest:90,
+        how:'哑铃置于肩侧或体前，双脚与肩同宽，屈髋屈膝下蹲至大腿接近平行地面，再脚跟发力站起。',
+        tip:'目标区间 10–12 次。膝盖始终对准脚尖方向，起身时别塌腰前倾。' },
+      { n:'哑铃肩推', m:'r', t:10, sets:3, rest:90,
+        how:'坐姿或站姿，哑铃举到耳侧、掌心朝前，向上推至手臂接近伸直但不锁死，再缓慢下放回耳侧。',
+        tip:'推的时候不要弓腰后仰，靠核心稳住躯干。' },
+      { n:'单臂哑铃划船', m:'r', t:11, sets:3, rest:90, unit:'次/侧',
+        how:'一手扶椅面或撑在台上，背保持平直，另一手持哑铃向髋部方向拉，肘贴近身体，肩胛夹紧停 1 秒再放下。',
+        tip:'目标区间 10–12 次。别用身体甩重量，吃不准就减重量。' },
+      { n:'平板支撑', m:'t', t:40, sets:2, rest:45,
+        how:'前臂撑地，肘在肩膀正下方，臀腹收紧让身体成一条直线，保持正常呼吸。',
+        tip:'腰一塌就结束这一组，不要用塌腰换时间。' },
+      { n:'臀桥', m:'r', t:15, sets:2, rest:60,
+        how:'仰卧屈膝，脚跟离臀部约一掌，收紧臀部把髋顶起到肩、髋、膝成一条线，停 1 秒再缓慢落下。',
+        tip:'用臀发力顶，不是用腰把身体拱起来。' }
+    ]},
+    { name:'周二 · 轻松慢跑', short:'慢跑', dow:[2], min:35, circuit:false, exercises:[
+      { n:'轻松慢跑 30–40 分钟', m:'t', t:2100, sets:1, rest:0,
+        how:'强度以能边跑边说话为准（大致 130–150 心率）。跑不动就走一段，走跑结合同样有效。',
+        tip:'按你实际跑的时间来，跑完点「提前结束这一组」，记录的就是真实时长。' }
+    ]},
+    { name:'周三 · 轻量训练', short:'轻量', dow:[3], min:38, circuit:false, exercises:[
+      { n:'引体向上', m:'r', t:3, sets:2, rest:120,
+        how:'动作与周一相同，只把组数和次数降下来，作为技术复习而不是力竭训练。',
+        tip:'每组 3 次，留有余力就停。这一天不追求进步。' },
+      { n:'俯卧撑', m:'r', t:10, sets:2, rest:90,
+        how:'动作与周一相同，节奏放慢，重点是全程身体稳定。',
+        tip:'如果周一之后胸肩还酸，这天可以用跪姿把强度再降一档。' },
+      { n:'哑铃深蹲', m:'r', t:10, sets:2, rest:90,
+        how:'动作与周一相同，重量可以减一档，蹲起节奏放平缓。',
+        tip:'轻量日不练到力竭，第二天才恢复得过来。' },
+      { n:'哑铃肩推', m:'r', t:10, sets:2, rest:90,
+        how:'动作与周一相同，重量可减一档，注意不要为了完成次数而借力。',
+        tip:'宁可少做一次，不要弓腰硬推。' },
+      { n:'单臂哑铃划船', m:'r', t:10, sets:2, rest:90, unit:'次/侧',
+        how:'动作与周一相同，重量可减一档，每一下都停顿到位再放下。',
+        tip:'轻量日重点在感受背部发力，不在重量。' },
+      { n:'平板支撑', m:'t', t:30, sets:2, rest:45,
+        how:'动作与周一同，时间缩短到 30 秒，保证质量。',
+        tip:'撑到腰开始下沉就停，不要凑时间。' },
+      { n:'臀桥', m:'r', t:12, sets:2, rest:60,
+        how:'动作与周一相同，次数略降，顶端停顿 1 秒。',
+        tip:'臀部有灼热感是正常的，腰部有刺痛就停。' }
+    ]},
+    { name:'周五 · 标准力量', short:'力量', dow:[5], min:55, circuit:false, exercises:[
+      { n:'引体向上', m:'r', t:4, sets:3, rest:120,
+        how:'正手握杠略宽于肩，先沉肩再拉，下巴过杠即可，下放控制 2 秒到手臂接近伸直。',
+        tip:'目标 3–5 次。比周一同样的次数但更从容，说明恢复到位。' },
+      { n:'俯卧撑', m:'r', t:12, sets:3, rest:90,
+        how:'手掌略宽于肩，肘与身体约 45 度，胸口接近地面再推起，臀腹收紧成一条线。',
+        tip:'目标区间 10–15 次。比周一能多做一两次就是进步。' },
+      { n:'哑铃深蹲', m:'r', t:11, sets:3, rest:90,
+        how:'哑铃置于肩侧或体前，下蹲至大腿接近平行地面，脚跟发力站起。',
+        tip:'目标区间 10–12 次。动作不变，重量可以尝试比周一加一点。' },
+      { n:'哑铃肩推', m:'r', t:10, sets:3, rest:90,
+        how:'哑铃举到耳侧掌心朝前，推至手臂接近伸直，缓慢下放回耳侧。',
+        tip:'核心收紧，不要弓腰后仰借力。' },
+      { n:'单臂哑铃划船', m:'r', t:11, sets:3, rest:90, unit:'次/侧',
+        how:'一手扶椅，背保持平直，向髋部方向拉，肘贴身体，肩胛夹紧停 1 秒。',
+        tip:'目标区间 10–12 次。左右两侧各做，弱侧先做。' },
+      { n:'平板支撑', m:'t', t:40, sets:2, rest:45,
+        how:'前臂撑地，肘在肩下，头肩髋踝一条线，正常呼吸。',
+        tip:'腰一塌就停，质量优先于时长。' },
+      { n:'臀桥', m:'r', t:15, sets:2, rest:60,
+        how:'仰卧屈膝，收紧臀部顶髋至肩髋膝一条线，停 1 秒落下。',
+        tip:'顶端夹紧臀部 1 秒，比多做几次更有用。' }
+    ]},
+    { name:'周六 · 慢跑', short:'慢跑', dow:[6], min:25, circuit:false, exercises:[
+      { n:'慢跑 20–30 分钟', m:'t', t:1500, sets:1, rest:0,
+        how:'轻松配速跑 20–30 分钟。适应之后，可以在中间加 4–6 组「200 米快跑 + 200 米慢走」。',
+        tip:'如果周三轻量训练后仍然觉得累，就把这一次改成散步，不用硬顶。' }
+    ]}
+  ]
+}];
+
+/* =========================================================
+   1.5 训练语录 —— 三档，随完成度加重
+   1 纪律（开局/前几组）→ 2 决心（中段开始疲劳）→ 3 绝不投降（最后几组）
+   4 黑暗（只在最后一组偶发，收尾用，图个狠劲）
+   ========================================================= */
+var QUOTES = [
+  /* ---- 一档 · 纪律 ---- */
+  { lv:1, who:'马可·奥勒留', src:'《沉思录》5.20',
+    en:'The impediment to action advances action. What stands in the way becomes the way.',
+    cn:'障碍推动行动，阻挡道路的东西本身，也可以成为道路。' },
+  { lv:1, who:'孙武', src:'《孙子兵法·九地篇》',
+    en:'', cn:'投之亡地然后存，陷之死地然后生。' },
+  { lv:1, who:'西奥多·罗斯福', src:'《共和国公民身份》，1910',
+    en:'The credit belongs to the man who is actually in the arena.',
+    cn:'荣耀属于真正走进竞技场的人。' },
+  { lv:1, who:'梵高', src:'书信',
+    en:'Great things are done by a series of small things brought together.',
+    cn:'伟大的事业，是由一系列微小的事情汇聚而成的。' },
+  { lv:1, who:'尤达', src:'《星球大战：帝国反击战》，1980',
+    en:'Do. Or do not. There is no try.',
+    cn:'做，或者不做。没有所谓的尝试。' },
+  { lv:1, who:'孔子', src:'《论语·子罕》',
+    en:'', cn:'譬如为山，未成一篑，止，吾止也。' },
+  { lv:1, who:'克劳塞维茨', src:'《战争论》',
+    en:'The soldier is as proud of overcoming toil, as he is of surmounting danger.',
+    cn:'士兵以克服艰辛为荣，正如他以战胜危险为荣。' },
+  { lv:1, who:'托马斯·潘恩', src:'《美国危机》',
+    en:'The harder the conflict, the more glorious the triumph.',
+    cn:'冲突越艰难，胜利越辉煌。' },
+  { lv:1, who:'威廉·亨利', src:'《Invictus》',
+    en:'I am the master of my fate, I am the captain of my soul.',
+    cn:'我是命运的主人，我是灵魂的统帅。' },
+  { lv:1, who:'弗兰克·赫伯特', src:'《沙丘》',
+    en:'I must not fear. Fear is the mind-killer.',
+    cn:'我不能恐惧。恐惧是思维的杀手。' },
+  { lv:1, who:'萧伯纳', src:'《人与超人》',
+    en:'The reasonable man adapts himself to the world; the unreasonable one persists in trying to adapt the world to himself.',
+    cn:'理性的人让自己适应世界；不理性的人坚持让世界适应自己。' },
+  { lv:1, who:'海明威', src:'《老人与海》',
+    en:'A man can be destroyed but not defeated.',
+    cn:'一个人可以被毁灭，但不能被打败。' },
+  { lv:1, who:'尼采', src:'《偶像的黄昏》',
+    en:'What does not kill me makes me stronger.',
+    cn:'凡不能毁灭我的，必使我更强大。' },
+
+  /* ---- 一档 · 法考口诀（自己背过的东西，节奏比意义更管用） ---- */
+  { lv:1, who:'李佳', src:'行政法口诀 · 合法行政', ch:1,
+    en:'', cn:'法无授权不可为，法定职责必须为。' },
+  { lv:1, who:'柏浪涛', src:'刑法口诀 · 因果关系', ch:1,
+    en:'', cn:'因果看贡献，介入看异常。' },
+  { lv:1, who:'柏浪涛', src:'刑法口诀 · 不作为犯', ch:1,
+    en:'', cn:'能为、当为、不为。' },
+  { lv:1, who:'众合课堂', src:'《行政强制法》第 35 条', ch:1,
+    en:'', cn:'强制必先催告。' },
+  { lv:1, who:'戴鹏', src:'民诉口诀 · 管辖三步定位',
+    en:'', cn:'先专属，再协议，最后法定。' },
+  { lv:1, who:'左宁', src:'刑诉主观题口诀', ch:1,
+    en:'', cn:'勤学加上苦练，量变促成质变。' },
+
+  /* ---- 二档 · 决心 ---- */
+  { lv:2, who:'温斯顿·丘吉尔', src:'1940 年 5 月 13 日，下议院',
+    en:'I have nothing to offer but blood, toil, tears and sweat.',
+    cn:'我所能奉献的，只有热血、辛劳、眼泪和汗水。' },
+  { lv:2, who:'莎士比亚', src:'《裘力斯·凯撒》第二幕第二场',
+    en:'Cowards die many times before their deaths; the valiant never taste of death but once.',
+    cn:'懦夫在真正死亡之前已经死过许多次；勇者一生只经历一次死亡。' },
+  { lv:2, who:'丁尼生', src:'《轻骑兵的冲锋》，1854',
+    en:'Theirs not to reason why, theirs but to do and die.',
+    cn:'他们无暇追问缘由，他们的职责只是执行。' },
+  { lv:2, who:'拿破仑', src:'传统归名',
+    en:'Impossible is a word to be found only in the dictionary of fools.',
+    cn:'「不可能」这个词，只存在于愚人的字典里。' },
+  { lv:2, who:'洛奇·巴尔博亚', src:'《洛奇 6：永远的拳王》，2006',
+    en:"It ain't about how hard you hit. It's about how hard you can get hit and keep moving forward.",
+    cn:'关键不在于你能打出多重的一拳，而在于你挨了多重的打，还能继续前进。' },
+  { lv:2, who:'维克多·弗兰克尔', src:'《活出生命的意义》',
+    en:'When we are no longer able to change a situation, we are challenged to change ourselves.',
+    cn:'当我们已经无法改变处境时，挑战便在于改变自己。' },
+  { lv:2, who:'约瑟夫酋长', src:'1877 年投降演说',
+    en:'I am tired of fighting.',
+    cn:'我已经厌倦了战斗。' },
+  { lv:2, who:'塞缪尔·约翰逊', src:'1784 年书信',
+    en:'I will be conquered; I will not capitulate.',
+    cn:'我可以被击败，但我绝不投降。' },
+  { lv:2, who:'约翰·保罗·琼斯', src:'1779 年海战，传统记载',
+    en:'I have not yet begun to fight!',
+    cn:'我还没有开始战斗呢！' },
+  { lv:2, who:'温斯顿·丘吉尔', src:'1940 年 6 月 4 日，下议院',
+    en:'We shall fight on the beaches.',
+    cn:'我们将在海滩上战斗。' },
+  { lv:2, who:'狄兰·托马斯', src:'《不要温和地走进那个良夜》',
+    en:'Rage, rage against the dying of the light.',
+    cn:'怒斥吧，怒斥那光明的消逝。' },
+  { lv:2, who:'《肖申克的救赎》', src:'1994',
+    en:'Get busy living, or get busy dying.',
+    cn:'要么忙着活，要么忙着死。' },
+
+  /* ---- 二档 · 法考口诀 ---- */
+  { lv:2, who:'众合课堂', src:'刑法口诀 · 介入因素',
+    en:'', cn:'异常且致命，因果才中断；正常或助攻，一律不中断。' },
+  { lv:2, who:'柏浪涛', src:'刑法口诀 · 中止与未遂',
+    en:'', cn:'能达目的而不欲，是中止；欲达目的而不能，是未遂。' },
+  { lv:2, who:'戴鹏', src:'民诉口诀 · 案外人救济', ch:1,
+    en:'', cn:'判什么？执行什么？异议什么？' },
+  { lv:2, who:'戴鹏', src:'民诉口诀 · 特别程序',
+    en:'', cn:'特别程序三不搞：不辩论、不陪审、不调解。' },
+  { lv:2, who:'左宁', src:'刑诉口诀 · 回避决定主体', ch:1,
+    en:'', cn:'小兵找老大，老大找组织。' },
+  { lv:2, who:'左宁', src:'刑诉口诀 · 发回重审', ch:1,
+    en:'', cn:'曾参前，不参后；若发回，人要换。' },
+
+  /* ---- 三档 · 绝不投降 ---- */
+  { lv:3, who:'温斯顿·丘吉尔', src:'1940 年 5 月 13 日，下议院',
+    en:'Victory at all costs, victory in spite of all terror, victory, however long and hard the road may be.',
+    cn:'不惜一切代价赢得胜利；纵使面对恐惧，也要赢得胜利；无论道路多么漫长艰难。' },
+  { lv:3, who:'毛泽东', src:'《七律·人民解放军占领南京》，1949',
+    en:'', cn:'宜将剩勇追穷寇，不可沽名学霸王。' },
+  { lv:3, who:'莎士比亚', src:'《亨利五世》第三幕第一场',
+    en:'Once more unto the breach, dear friends, once more!',
+    cn:'再一次冲向缺口吧，亲爱的朋友们，再来一次！' },
+  { lv:3, who:'帕特里克·亨利', src:'1775 年弗吉尼亚议会演说',
+    en:'Give me liberty, or give me death!',
+    cn:'不自由，毋宁死！' },
+  { lv:3, who:'达斯·维达', src:'《星球大战：新希望》，1977',
+    en:'I find your lack of faith disturbing.',
+    cn:'我认为你缺乏信念这件事，很令人不安。' },
+  { lv:3, who:'哈特曼军士长', src:'《全金属外壳》，1987',
+    en:'What is your major malfunction, numbnuts?',
+    cn:'你他妈的到底有什么毛病，蠢货？' },
+
+  /* ---- 三档 · 新兵连喊号（短促，喊出来用） ---- */
+  { lv:3, ch:1, who:'哈特曼军士长', src:'《全金属外壳》，1987',
+    en:'One, two, three, four! I love the Marine Corps!',
+    cn:'一、二、三、四！我爱海军陆战队！' },
+  { lv:3, ch:1, who:'哈特曼军士长', src:'《全金属外壳》，1987',
+    en:'My Corps! Your Corps! Our Corps!',
+    cn:'我的军团！你的军团！我们的军团！' },
+  { lv:3, ch:1, who:'哈特曼军士长', src:'《全金属外壳》，1987',
+    en:'What makes the grass grow? Blood, blood, blood!',
+    cn:'是什么让草坪生长？鲜血！鲜血！鲜血！' },
+  { lv:3, ch:1, who:'哈特曼军士长', src:'《全金属外壳》，1987',
+    en:'Marines are not allowed to die without permission!',
+    cn:'海军陆战队员未经允许，不准死亡！' },
+
+  /* ---- 三档 · 凝视（重、冷，但不劝退） ---- */
+  { lv:3, who:'约瑟夫·康拉德', src:'《黑暗之心》',
+    en:'I have wrestled with death.',
+    cn:'我曾与死亡搏斗。' },
+  { lv:3, who:'T. S. 艾略特', src:'《荒原》',
+    en:'I will show you fear in a handful of dust.',
+    cn:'我将让你在一把尘土中看见恐惧。' },
+  { lv:3, who:'菲茨杰拉德', src:'常见引语',
+    en:'Show me a hero and I will write you a tragedy.',
+    cn:'给我一个英雄，我就给你写一出悲剧。' },
+  { lv:3, who:'罗伯特·弗罗斯特', src:'《火与冰》',
+    en:'Some say the world will end in fire, some say in ice.',
+    cn:'有人说世界将毁于烈火，有人说将毁于寒冰。' },
+  { lv:3, who:'圣埃克苏佩里', src:'《Arras 之飞行》',
+    en:'War is a disease. It is like typhus.',
+    cn:'战争是一种疾病，就像斑疹伤寒一样。' },
+  { lv:3, who:'传统归名 · 柏拉图', src:'出处存疑',
+    en:'Only the dead have seen the end of war.',
+    cn:'只有死者才真正见过战争的终结。' },
+  { lv:3, who:'谢尔曼', src:'1864 年演说',
+    en:'War is hell.',
+    cn:'战争就是地狱。' },
+  { lv:3, who:'谢尔曼', src:'1879 年演说',
+    en:'I am tired and sick of war. Its glory is all moonshine.',
+    cn:'我厌倦战争，厌恶战争。所谓战争的荣耀，不过是虚幻的光影。' },
+  { lv:3, who:'W. S. 吉尔伯特', src:'《The Gondoliers》',
+    en:'In enterprise of martial kind, when there was any fighting, he led his regiment from behind.',
+    cn:'每逢战事，他总是率领全团从后方前进。' },
+  { lv:3, who:'汤姆·哈金', src:'1991 年，参议院',
+    en:'The Gulf War was like teenage sex. We got in too soon and out too soon.',
+    cn:'海湾战争就像第一次：进去得太早，出来得也太早。' },
+  { lv:3, who:'海因莱因', src:'常见归引',
+    en:'The best way to lie convincingly is to tell the truth unconvincingly.',
+    cn:'最好的撒谎方式，就是把真话说得让人不相信。' },
+  { lv:3, who:'珍妮特·兰金', src:'反战演说',
+    en:'You can no more win a war than you can win an earthquake.',
+    cn:'你无法赢得一场战争，就像你无法赢得一场地震。' },
+  { lv:3, who:'海军陆战队', src:'常与《全金属外壳》训练语境并置，版本待核',
+    en:'The deadliest weapon in the world is a Marine and his rifle.',
+    cn:'世界上最致命的武器，是一名海军陆战队员和他的步枪。' },
+
+  /* ---- 三档 · 法考口诀（最狠的那几条，七言、六条军规、四连排比） ---- */
+  { lv:3, who:'法考圈流传', src:'刑法口诀 · 抢劫罪加重情节',
+    en:'', cn:'入户上车抢银行，多次巨额有伤亡，冒充军警持着枪，特殊物资不能抢。' },
+  { lv:3, who:'众合理论法', src:'《法官法》《检察官法》',
+    en:'', cn:'不徇私、不枉法、不索贿、不泄露、不单方接触、不兼职。' },
+  { lv:3, who:'鄢梦萱', src:'商经口诀 · 明显缺乏清偿能力',
+    en:'', cn:'钱不够，人没了，执行不能，扭亏无望。' },
+  { lv:3, who:'众合课堂', src:'刑法口诀 · 主刑与附加刑', ch:1,
+    en:'', cn:'主刑五样管拘有，无期死刑不手软。' },
+
+  /* ---- 四档 · 黑暗（只在最后一组偶发） ---- */
+  { lv:4, who:'泰温·兰尼斯特', src:'《权力的游戏》',
+    en:"Any man who must say 'I am the king' is no true king.",
+    cn:'凡是需要反复宣称自己是国王的人，都不是真正的国王。' },
+  { lv:4, who:'弗兰克·安德伍德', src:'《纸牌屋》',
+    en:'There are two kinds of pain. The sort of pain that makes you strong, or useless pain.',
+    cn:'有两种痛苦：一种让你变得强大，另一种只是毫无意义的痛苦。' },
+  { lv:4, who:'徐金桂', src:'行政法口诀 · 派出机构越权',
+    en:'', cn:'小错误自己扛，大错误找家长。' }
+];
+
+/* =========================================================
+   2. 存储
+   ========================================================= */
+var KEY = 'train.v1';
+var DB = { history: [], plans: {}, settings: { sound: true, vib: true }, last: null };
+
+function load() {
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) {
+      var o = JSON.parse(raw);
+      if (o && typeof o === 'object') DB = Object.assign(DB, o);
+    }
+  } catch (e) {}
+  DB.history = Array.isArray(DB.history) ? DB.history : [];
+  DB.plans = DB.plans || {};
+  DB.qlog = Array.isArray(DB.qlog) ? DB.qlog : [];
+  DB.settings = Object.assign({ sound: true, vib: true, quotes: true }, DB.settings || {});
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(DB)); }
+  catch (e) { alert('本机存储写入失败，记录可能无法保存'); }
+}
+
+/* =========================================================
+   3. 工具
+   ========================================================= */
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+  });
+}
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
+function dstr(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+function mmss(sec) {
+  sec = Math.max(0, Math.round(sec));
+  var m = Math.floor(sec / 60), s = sec % 60;
+  return m + ':' + pad(s);
+}
+function fmtDur(sec) {
+  sec = Math.max(0, Math.round(sec));
+  if (sec < 60) return sec + ' 秒';
+  var m = Math.round(sec / 60);
+  if (m < 60) return m + ' 分钟';
+  return Math.floor(m / 60) + ' 小时 ' + (m % 60) + ' 分';
+}
+function fmtDate(ds) {
+  var p = ds.split('-');
+  return (+p[1]) + '月' + (+p[2]) + '日';
+}
+function totalSetsOfDay(day) {
+  return day.exercises.reduce(function (a, e) { return a + (e.sets || 1); }, 0);
+}
+function targetText(ex) {
+  if (ex.m === 't') return ex.t >= 120 ? Math.round(ex.t / 60) + ' 分钟' : ex.t + ' 秒';
+  return ex.t + ' ' + (ex.unit || '次');
+}
+function fmtLeft(ms) {
+  var sec = Math.max(0, Math.ceil(ms / 1000));
+  if (sec >= 60) return Math.floor(sec / 60) + ':' + pad(sec % 60);
+  return String(sec);
+}
+
+/* =========================================================
+   4. 计划存取
+   ========================================================= */
+function getPlan(id) {
+  if (DB.plans[id]) return DB.plans[id];
+  for (var i = 0; i < PLANS.length; i++) if (PLANS[i].id === id) return PLANS[i];
+  return null;
+}
+function ensureEditable(id) {
+  if (!DB.plans[id]) {
+    var src = getPlan(id);
+    if (!src) return null;
+    DB.plans[id] = JSON.parse(JSON.stringify(src));
+  }
+  return DB.plans[id];
+}
+function allPlans() {
+  var list = [];
+  var seen = {};
+  for (var k in DB.plans) { if (DB.plans.hasOwnProperty(k)) { list.push(DB.plans[k]); seen[k] = 1; } }
+  for (var i = 0; i < PLANS.length; i++) if (!seen[PLANS[i].id]) list.push(PLANS[i]);
+  return list;
+}
+function nextDayIdx(plan) {
+  if (!plan || !plan.days || !plan.days.length) return 0;
+  if (DB.last && DB.last.planId === plan.id) return (DB.last.dayIdx + 1) % plan.days.length;
+  return 0;
+}
+
+/* 按星期几排期 */
+var DOW_CN = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+var DOW_ONE = ['日', '一', '二', '三', '四', '五', '六'];
+
+function planHasDow(plan) {
+  if (!plan || !plan.days) return false;
+  for (var i = 0; i < plan.days.length; i++) {
+    if (plan.days[i].dow && plan.days[i].dow.length) return true;
+  }
+  return false;
+}
+function dayForDow(plan, dow) {
+  if (!plan || !plan.days) return null;
+  for (var i = 0; i < plan.days.length; i++) {
+    var d = plan.days[i];
+    if (d.dow && d.dow.indexOf(dow) >= 0) return { idx: i, day: d };
+  }
+  return null;
+}
+function todayPick(plan) {
+  if (!plan || !plan.days || !plan.days.length) return null;
+  if (planHasDow(plan)) return dayForDow(plan, new Date().getDay());
+  var di = nextDayIdx(plan);
+  return { idx: di, day: plan.days[di] };
+}
+function dowLabel(day) {
+  if (!day.dow || !day.dow.length) return '';
+  return day.dow.map(function (d) { return DOW_CN[d]; }).join('、');
+}
+
+/* =========================================================
+   5. 状态
+   ========================================================= */
+var S = { view: 'home', planId: 'main', session: null, modal: null, planOpen: null, done: null, openRec: null, editing: null };
+var tick = null;
+
+function buildQueue(day) {
+  var q = [], i, k, r;
+  if (day.circuit) {
+    var rounds = 1;
+    for (i = 0; i < day.exercises.length; i++) rounds = Math.max(rounds, day.exercises[i].sets || 1);
+    for (r = 0; r < rounds; r++) {
+      for (i = 0; i < day.exercises.length; i++) {
+        if ((day.exercises[i].sets || 1) > r) q.push({ exIdx: i, setIdx: r, round: r });
+      }
+    }
+  } else {
+    for (i = 0; i < day.exercises.length; i++) {
+      var sets = day.exercises[i].sets || 1;
+      for (k = 0; k < sets; k++) q.push({ exIdx: i, setIdx: k, round: 0 });
+    }
+  }
+  return q;
+}
+
+/* =========================================================
+   5.5 语录挑选
+   ========================================================= */
+function quotesOn() { return DB.settings.quotes !== false; }
+
+/* 按已完成比例定档；最后一组有几率抽四档（黑暗）收尾 */
+function quoteLevelFor(s) {
+  var total = s.q.length;
+  var ratio = total <= 1 ? 0 : s.qIdx / (total - 1);
+  if (s.qIdx >= total - 1 && total > 4 && Math.random() < 0.55) return 4;
+  if (ratio < 0.34) return 1;
+  if (ratio < 0.72) return 2;
+  return 3;
+}
+
+/* 记录每句的出现时间，用来判断「今天用过没有」「多久没出现」 */
+function qLogPush(cn) {
+  var now = Date.now();
+  DB.qlog.push({ cn: cn, ts: now });
+  var cut = now - 45 * 86400000;
+  DB.qlog = DB.qlog.filter(function (e) { return e.ts >= cut; });
+  if (DB.qlog.length > 400) DB.qlog = DB.qlog.slice(-400);
+  save();
+}
+
+function qStat(cn) {
+  var today = dstr(new Date()), cnt = 0, last = 0;
+  for (var i = 0; i < DB.qlog.length; i++) {
+    var e = DB.qlog[i];
+    if (e.cn !== cn) continue;
+    if (dstr(new Date(e.ts)) === today) cnt++;
+    if (e.ts > last) last = e.ts;
+  }
+  return { cnt: cnt, days: last ? (Date.now() - last) / 86400000 : 999 };
+}
+
+/* 伪随机挑选，四条规矩：
+   1) 今天没出现过的优先；本档用完了，向相邻档借，实在都说过才允许回头
+   2) 回头时挑「今天出现次数最少」的，平手再挑最久没出现的
+   3) 越久没出现权重越高（7 天半衰），昨天的自然会排到队尾
+   4) 屏上这一句直接排除 —— 所以每次切换必定换新句子 */
+function pickQuote(level, excludeCn) {
+  var items = [];
+  QUOTES.forEach(function (q) {
+    if (q.cn === excludeCn) return;
+    if (q.lv === 4 && level < 4) return;          // 黑暗档不主动外借
+    var st = qStat(q.cn);
+    items.push({ q: q, d: Math.abs(q.lv - level), cnt: st.cnt, days: Math.min(st.days, 120) });
+  });
+  if (!items.length) return QUOTES[0];
+
+  var cand, dmin;
+  var fresh = items.filter(function (x) { return x.cnt === 0; });
+  if (fresh.length) {
+    dmin = Math.min.apply(null, fresh.map(function (x) { return x.d; }));
+    cand = fresh.filter(function (x) { return x.d === dmin; });
+  } else {
+    var cmin = Math.min.apply(null, items.map(function (x) { return x.cnt; }));
+    var near = items.filter(function (x) { return x.cnt === cmin; });
+    dmin = Math.min.apply(null, near.map(function (x) { return x.d; }));
+    cand = near.filter(function (x) { return x.d === dmin; });
+  }
+
+  /* 新鲜度阶梯：从没出现过的权重最高，越近用过的越低。
+     不能用衰减式（days=999 会趋近 0），否则没见过的句子反而被压到最底。 */
+  var w = cand.map(function (x) {
+    var d = x.days;
+    if (d > 900) return 8;      // 从没出现过
+    if (d >= 7) return 4;       // 一周以上
+    if (d >= 3) return 2;
+    if (d >= 1) return 0.6;     // 昨天 / 前两天
+    return 0.02;                // 今天已经用过
+  });
+  var tot = w.reduce(function (a, b) { return a + b; }, 0);
+  var r = Math.random() * tot, acc = 0;
+  for (var i = 0; i < cand.length; i++) {
+    acc += w[i];
+    if (r <= acc) return cand[i].q;
+  }
+  return cand[cand.length - 1].q;
+}
+
+function assignQuote(s) {
+  if (!s) return;
+  if (!quotesOn()) { s.quote = null; return; }
+  var prevCn = s.quote ? s.quote.cn : '';
+  var q = pickQuote(quoteLevelFor(s), prevCn);
+  s.quote = q;
+  qLogPush(q.cn);
+}
+
+/* 喊号版式字距大、字号大，中文默认「任意两字之间都能断行」，
+   会把「不手软」劈成「不手 / 软」。按标点切块、每块禁止内部断行，
+   断行就只落在标点之后，念起来才是整句。 */
+function cnClauses(txt) {
+  var s = String(txt), out = '', buf = '', marks = '，。；：、？！';
+  for (var i = 0; i < s.length; i++) {
+    buf += s[i];
+    if (marks.indexOf(s[i]) >= 0) {
+      out += '<span class="nw">' + esc(buf) + '</span>';
+      buf = '';
+    }
+  }
+  if (buf) out += '<span class="nw">' + esc(buf) + '</span>';
+  return out;
+}
+
+function quoteHTML(big) {
+  var s = S.session;
+  if (!s || !s.quote) return '';
+  var q = s.quote;
+  var h = '<div class="tq' + (big ? ' big' : '') + '">';
+  h += '<div class="qcn' + (q.ch ? ' ch' : '') + '">' + (q.ch ? cnClauses(q.cn) : esc(q.cn)) + '</div>';
+  if (q.en) h += '<div class="qen">' + esc(q.en) + '</div>';
+  h += '<div class="qsrc">' + esc(q.who) + (q.src ? '　' + esc(q.src) : '') + '</div>';
+  return h + '</div>';
+}
+
+/* =========================================================
+   6. 声音 / 震动
+   ========================================================= */
+var ac = null;
+function beep(kind) {
+  if (!DB.settings.sound) return;
+  try {
+    if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+    if (ac.state === 'suspended') ac.resume();
+    var now = ac.currentTime;
+    function tone(f, t0, dur, vol) {
+      var o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, now + t0);
+      g.gain.linearRampToValueAtTime(vol, now + t0 + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + t0 + dur);
+      o.connect(g); g.connect(ac.destination);
+      o.start(now + t0); o.stop(now + t0 + dur + 0.03);
+    }
+    if (kind === 1) tone(880, 0, 0.07, 0.14);
+    else if (kind === 2) { tone(700, 0, 0.13, 0.18); tone(1050, 0.15, 0.2, 0.18); }
+    else if (kind === 3) tone(1046, 0, 0.16, 0.2);
+    else { tone(523, 0, 0.1, 0.14); tone(784, 0.11, 0.14, 0.14); tone(1046, 0.24, 0.22, 0.14); }
+  } catch (e) {}
+}
+function buzz(p) {
+  if (!DB.settings.vib) return;
+  try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) {}
+}
+
+/* =========================================================
+   7. 屏幕常亮
+   ========================================================= */
+var wakeLock = null;
+function keepAwake() {
+  try {
+    if ('wakeLock' in navigator) {
+      navigator.wakeLock.request('screen').then(function (l) { wakeLock = l; }).catch(function () {});
+    }
+  } catch (e) {}
+}
+function releaseAwake() {
+  try { if (wakeLock) wakeLock.release(); } catch (e) {}
+  wakeLock = null;
+}
+
+/* =========================================================
+   8. 训练引擎
+   ========================================================= */
+function startSession(planId, dayIdx) {
+  var plan = getPlan(planId);
+  if (!plan || !plan.days || !plan.days[dayIdx]) return;
+  var day = plan.days[dayIdx];
+  if (!day.exercises || !day.exercises.length) { alert('这一天还没有动作'); return; }
+  S.session = {
+    planId: planId, dayIdx: dayIdx, planName: plan.name, dayName: day.name, day: day,
+    q: buildQueue(day), qIdx: 0, phase: 'ready',
+    workStart: 0, workEnd: 0, restEnd: 0, restTotal: 0, lastBeep: null,
+    records: day.exercises.map(function (e) {
+      return { n: e.n, m: e.m, t: e.t, unit: e.unit || '', sets: [] };
+    }),
+    startTs: Date.now(), undo: []
+  };
+  assignQuote(S.session);
+  S.view = 'train'; S.modal = null;
+  keepAwake();
+  render();
+}
+
+function curStep() {
+  var s = S.session;
+  return s && s.q && s.q.length ? s.q[Math.min(s.qIdx, s.q.length - 1)] : null;
+}
+function curEx() {
+  var s = S.session, st = curStep();
+  return (s && st) ? s.day.exercises[st.exIdx] : null;
+}
+
+function primary() {
+  var s = S.session;
+  if (!s) return;
+  var ex = curEx();
+  if (!ex) return;
+  if (s.phase === 'ready') {
+    if (ex.m === 't') {
+      s.phase = 'working';
+      s.workStart = Date.now();
+      s.workEnd = Date.now() + ex.t * 1000;
+      beep(1);
+      render();
+      startTicker();
+    } else {
+      completeSet(null);
+    }
+  } else if (s.phase === 'working') {
+    var done = Math.round((Date.now() - s.workStart) / 1000);
+    completeSet(Math.max(1, Math.min(ex.t, done)));
+  } else if (s.phase === 'resting') {
+    skipRest();
+  }
+}
+
+function completeSet(val) {
+  var s = S.session;
+  if (!s) return;
+  var step = s.q[s.qIdx];
+  var ex = s.day.exercises[step.exIdx];
+  var v = (val == null) ? ex.t : val;
+
+  s.records[step.exIdx].sets.push({ ts: Date.now(), v: v });
+  s.undo.push({ qIdx: s.qIdx, exIdx: step.exIdx });
+
+  var ni = s.qIdx + 1;
+  if (ni >= s.q.length) { finish(); return; }
+
+  var rest = ex.rest || 0;
+  if (s.day.circuit) {
+    var a = s.q[s.qIdx], b = s.q[ni];
+    if (b.round !== a.round) rest = s.day.roundRest || Math.max(60, (ex.rest || 20) * 2);
+  }
+  s.qIdx = ni;
+  if (rest > 0) {
+    s.phase = 'resting';
+    s.restTotal = rest;
+    s.restEnd = Date.now() + rest * 1000;
+    s.lastBeep = null;
+  } else {
+    s.phase = 'ready';
+  }
+  assignQuote(s);
+  buzz(12);
+  render();
+  if (s.phase === 'resting') startTicker();
+}
+
+function undo() {
+  var s = S.session;
+  if (!s || !s.undo.length) return;
+  var u = s.undo.pop();
+  s.records[u.exIdx].sets.pop();
+  s.qIdx = u.qIdx;
+  s.phase = 'ready';
+  s.workEnd = 0; s.workStart = 0;
+  assignQuote(s);
+  stopTicker();
+  beep(1);
+  render();
+}
+
+function skipRest() {
+  var s = S.session;
+  if (!s || s.phase !== 'resting') return;
+  s.phase = 'ready';
+  s.restEnd = 0;
+  assignQuote(s);
+  stopTicker();
+  render();
+}
+function addRest(sec) {
+  var s = S.session;
+  if (!s || s.phase !== 'resting') return;
+  s.restEnd += sec * 1000;
+  s.restTotal += sec;
+  render();
+  startTicker();
+}
+
+function finish() {
+  var s = S.session;
+  if (!s) return;
+  stopTicker();
+  var end = Date.now();
+  var totalSets = 0;
+  s.records.forEach(function (r) { totalSets += r.sets.length; });
+  var rec = {
+    id: 's' + end, d: dstr(new Date()), ts: s.startTs,
+    plan: s.planName, day: s.dayName,
+    dur: Math.round((end - s.startTs) / 1000),
+    sets: totalSets,
+    items: s.records.filter(function (r) { return r.sets.length; }).map(function (r) {
+      return { n: r.n, v: r.sets.map(function (x) { return x.v; }), u: r.unit || '' };
+    })
+  };
+  if (totalSets > 0) {
+    DB.history.unshift(rec);
+    DB.last = { planId: s.planId, dayIdx: s.dayIdx };
+    save();
+  }
+  S.done = rec;
+  S.session = null;
+  S.view = 'done';
+  releaseAwake();
+  beep(4);
+  buzz([25, 70, 25]);
+  render();
+}
+
+function quitSession() {
+  var s = S.session;
+  if (!s) return;
+  var n = 0;
+  s.records.forEach(function (r) { n += r.sets.length; });
+  if (n === 0) {
+    if (confirm('还没记录任何一组，退出吗？')) {
+      stopTicker(); S.session = null; S.view = 'home'; releaseAwake(); render();
+    }
+    return;
+  }
+  if (confirm('已记录 ' + n + ' 组，结束并保存这次训练吗？')) finish();
+}
+
+/* ---------- 计时器 ---------- */
+var RC = 2 * Math.PI * 88;
+function startTicker() { if (!tick) tick = setInterval(onTick, 100); }
+function stopTicker() { if (tick) { clearInterval(tick); tick = null; } }
+
+function paintRing(frac, isRest, text) {
+  var bar = document.getElementById('rbar');
+  var bn = document.getElementById('bignum');
+  if (!bar || !bn) return;
+  frac = Math.max(0, Math.min(1, frac));
+  bar.style.strokeDashoffset = String(RC * (1 - frac));
+  if (isRest) bar.classList.add('rest'); else bar.classList.remove('rest');
+  var t = String(text);
+  if (bn.textContent !== t) {
+    bn.textContent = t;
+    bn.classList.toggle('sm', t.length >= 4);
+  }
+}
+
+function onTick() {
+  var s = S.session;
+  if (!s || S.view !== 'train') { stopTicker(); return; }
+  var now = Date.now();
+  if (s.phase === 'working') {
+    var left = Math.max(0, s.workEnd - now);
+    var span = Math.max(1, s.workEnd - s.workStart);
+    paintRing(left / span, false, fmtLeft(left));
+    if (left <= 0) {
+      stopTicker();
+      beep(3); buzz(60);
+      completeSet(curEx() ? curEx().t : 0);
+    }
+  } else if (s.phase === 'resting') {
+    var rleft = Math.max(0, s.restEnd - now);
+    var sec = Math.ceil(rleft / 1000);
+    paintRing(rleft / Math.max(1, s.restTotal * 1000), true, fmtLeft(rleft));
+    if (rleft <= 3200 && sec > 0 && s.lastBeep !== sec) { s.lastBeep = sec; beep(1); }
+    if (rleft <= 0) {
+      stopTicker();
+      s.phase = 'ready';
+      s.lastBeep = null;
+      assignQuote(s);
+      beep(2); buzz([25, 60, 25]);
+      render();
+    }
+  } else {
+    stopTicker();
+  }
+}
+
+/* =========================================================
+   9. 统计
+   ========================================================= */
+function stats() {
+  var today = dstr(new Date());
+  var hist = DB.history || [];
+  var total = 0, totalDur = 0, i;
+  for (i = 0; i < hist.length; i++) { total += hist[i].sets || 0; totalDur += hist[i].dur || 0; }
+
+  var now = new Date();
+  var dow = (now.getDay() + 6) % 7;
+  var mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow);
+  var week = 0;
+  for (i = 0; i < hist.length; i++) if (hist[i].ts >= mon.getTime()) week++;
+
+  var dset = {};
+  for (i = 0; i < hist.length; i++) dset[hist[i].d] = 1;
+  var streak = 0;
+  for (i = 0; i < 400; i++) {
+    var d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    var k = dstr(d);
+    if (dset[k]) streak++;
+    else if (i === 0) continue;
+    else break;
+  }
+  return { total: total, totalDur: totalDur, week: week, streak: streak, count: hist.length, today: today };
+}
+
+function heatCells() {
+  var map = {};
+  (DB.history || []).forEach(function (r) { map[r.d] = (map[r.d] || 0) + (r.sets || 0); });
+  var now = new Date();
+  var base = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var dow = (base.getDay() + 6) % 7;
+  var start = new Date(base.getFullYear(), base.getMonth(), base.getDate() - dow - 77);
+  var todayKey = dstr(base);
+  var out = [];
+  for (var i = 0; i < 84; i++) {
+    var d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+    var k = dstr(d);
+    var v = map[k] || 0;
+    var lv = v === 0 ? 0 : (v <= 8 ? 1 : (v <= 16 ? 2 : 3));
+    out.push('<i class="' + (lv ? 'l' + lv : '') + (k === todayKey ? ' today' : '') + '" title="' + k + ' · ' + v + ' 组"></i>');
+  }
+  return out.join('');
+}
+
+/* =========================================================
+   10. 渲染
+   ========================================================= */
+function tabbar() {
+  var items = [
+    { v: 'home', t: '训练', p: 'M13 2 3 14h7l-1 8 10-12h-7l1-8z', fill: 1 },
+    { v: 'plans', t: '计划', p: 'M4 6h16M4 12h16M4 18h10' },
+    { v: 'history', t: '记录', p: 'M4 5h16v15H4zM8 3v4M16 3v4M4 10h16' }
+  ];
+  var h = '<div class="tabbar"><div class="in">';
+  items.forEach(function (it) {
+    var on = (S.view === it.v) || (it.v === 'plans' && S.view === 'plan');
+    h += '<button class="tab' + (on ? ' on' : '') + '" data-act="go" data-v="' + it.v + '">' +
+      '<svg viewBox="0 0 24 24"' + (it.fill ? ' fill="currentColor" stroke="none"' : '') + '><path d="' + it.p + '"/></svg>' +
+      '<span>' + it.t + '</span></button>';
+  });
+  return h + '</div></div>';
+}
+
+function weekView(plan) {
+  var now = new Date();
+  var mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+  var doneMap = {};
+  (DB.history || []).forEach(function (r) {
+    if ((r.ts || 0) >= mon.getTime()) doneMap[r.d] = (doneMap[r.d] || 0) + 1;
+  });
+  var todayKey = dstr(now);
+  var h = '<div class="week">';
+  for (var i = 0; i < 7; i++) {
+    var d = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i);
+    var k = dstr(d);
+    var dn = d.getDay();
+    var it = planHasDow(plan) ? dayForDow(plan, dn) : null;
+    var cls = 'wd';
+    if (!it) cls += ' rest';
+    if (k === todayKey) cls += ' today';
+    if (doneMap[k]) cls += ' done';
+    h += '<div class="' + cls + '"><b>' + DOW_ONE[dn] + '</b><span>' +
+      (it ? esc(it.day.short || it.day.name) : '休') + '</span></div>';
+  }
+  return h + '</div>';
+}
+
+function planDaysPerWeek(plan) {
+  var n = 0;
+  (plan.days || []).forEach(function (d) {
+    n += (d.dow && d.dow.length) ? d.dow.length : 1;
+  });
+  return n;
+}
+
+function viewHome() {
+  var st = stats();
+  var plan = getPlan(S.planId) || allPlans()[0];
+  if (!plan) return '<div class="empty">还没有任何计划，去「计划」页导入一个。</div>';
+  var pick = todayPick(plan);
+  var dow = new Date().getDay();
+
+  var h = '';
+  h += '<div class="between" style="padding:4px 2px 16px">' +
+    '<div><h1 class="h1">' + DOW_CN[dow] + '</h1>' +
+    '<p class="sub" style="margin-top:2px">' + esc(plan.name) + '</p></div>' +
+    '<div class="chip">连续 ' + st.streak + ' 天</div></div>';
+
+  if (pick) {
+    var day = pick.day;
+    var meta = dowLabel(day) ? (dowLabel(day) + ' 排期') : ('第 ' + (pick.idx + 1) + ' 天');
+    h += '<div class="card stack">' +
+      '<div class="row" style="gap:8px"><span class="chip">今天</span><span class="small">' + meta + '</span></div>' +
+      '<div><div class="h2">' + esc(day.name) + '</div>' +
+      '<div class="small" style="margin-top:5px">' + day.exercises.length + ' 个动作 · ' +
+      totalSetsOfDay(day) + ' 组 · 约 ' + (day.min || 25) + ' 分钟</div></div>' +
+      '<button class="btn primary" data-act="start">开始训练</button>' +
+      '<div class="row"><button class="btn ghost sm" data-act="pickDay">换一天</button>' +
+      '<button class="btn ghost sm" data-act="go" data-v="plans">换计划</button></div>' +
+      '</div>';
+  } else {
+    h += '<div class="card stack">' +
+      '<div class="row" style="gap:8px"><span class="chip gray">今天</span><span class="small">' + DOW_CN[dow] + '</span></div>' +
+      '<div><div class="h2">休息日</div>' +
+      '<div class="small" style="margin-top:5px">按方案今天不练。睡够、吃够，明天才练得动。</div></div>' +
+      '<button class="btn ghost" data-act="pickDay">想练的话，挑一天</button>' +
+      '</div>';
+  }
+
+  h += '<div class="card" style="margin-top:12px">' +
+    '<div class="between" style="margin-bottom:10px"><span class="h2" style="font-size:15px">本周</span>' +
+    '<span class="small">已练 ' + st.week + ' / 计划 ' + planDaysPerWeek(plan) + '</span></div>' +
+    weekView(plan) + '</div>';
+
+  h += '<div class="card" style="margin-top:12px"><div class="stat3">' +
+    '<div><div class="v">' + st.week + '</div><div class="k">本周次数</div></div>' +
+    '<div><div class="v">' + st.streak + '</div><div class="k">连续天数</div></div>' +
+    '<div><div class="v">' + st.total + '</div><div class="k">累计组数</div></div>' +
+    '</div></div>';
+
+  h += '<div class="card" style="margin-top:12px">' +
+    '<div class="between" style="margin-bottom:10px"><span class="h2" style="font-size:15px">近 12 周</span>' +
+    '<span class="small">共 ' + st.count + ' 练</span></div>' +
+    '<div class="heat">' + heatCells() + '</div></div>';
+
+  return h;
+}
+
+function viewTrain() {
+  var s = S.session;
+  if (!s) return '';
+  var step = s.q[s.qIdx];
+  var ex = s.day.exercises[step.exIdx];
+  var total = s.q.length;
+  var pct = Math.round((s.qIdx / total) * 100);
+  var elapsed = Math.round((Date.now() - s.startTs) / 1000);
+
+  var num, unit, label, frac = 1, isRest = false;
+
+  if (s.phase === 'resting') {
+    var rl = Math.max(0, s.restEnd - Date.now());
+    num = fmtLeft(rl); unit = Math.ceil(rl / 1000) >= 60 ? '' : '秒'; label = '休息';
+    frac = rl / Math.max(1, s.restTotal * 1000);
+    isRest = true;
+  } else if (s.phase === 'working') {
+    var wl = Math.max(0, s.workEnd - Date.now());
+    num = fmtLeft(wl); unit = Math.ceil(wl / 1000) >= 60 ? '' : '秒'; label = '保持';
+    frac = wl / Math.max(1, s.workEnd - s.workStart);
+  } else {
+    if (ex.m === 't' && ex.t >= 120) { num = Math.round(ex.t / 60); unit = '分钟'; }
+    else { num = ex.t; unit = (ex.m === 't') ? '秒' : (ex.unit || '次'); }
+    label = s.day.circuit ? ('第 ' + (step.round + 1) + ' 轮') : ('第 ' + (step.setIdx + 1) + ' / ' + (ex.sets || 1) + ' 组');
+  }
+
+  var exNo = step.exIdx + 1;
+  var h = '<div class="train">';
+
+  h += '<div class="thead">' +
+    '<button class="xbtn" data-act="quit">✕</button>' +
+    '<div class="tprog"><div class="tbar"><i style="width:' + pct + '%"></i></div>' +
+    '<div class="small mono">' + s.qIdx + ' / ' + total + ' 组 · ' + mmss(elapsed) + '</div></div>' +
+    '</div>';
+
+  var nextInfo = '';
+  if (s.phase === 'resting' && s.q[s.qIdx]) {
+    var nx = s.day.exercises[s.q[s.qIdx].exIdx];
+    nextInfo = '<div class="nx">下一组：' + esc(nx.n) + ' · ' + targetText(nx) + '</div>';
+  }
+
+  h += '<div class="tname">' + esc(ex.n) + '<small>' + exNo + '/' + s.day.exercises.length + '</small></div>';
+  h += '<div class="tmeta">' + (s.phase === 'resting' ? '放松呼吸，准备下一组' : label + ' · 目标 <b>' + targetText(ex) + '</b>') + '</div>';
+
+  h += '<div class="ringwrap">' +
+    '<svg viewBox="0 0 200 200">' +
+    '<circle class="rtrack" cx="100" cy="100" r="88"/>' +
+    '<circle id="rbar" class="rbar' + (isRest ? ' rest' : '') + '" cx="100" cy="100" r="88" ' +
+    'stroke-dasharray="' + RC.toFixed(2) + '" stroke-dashoffset="' + (RC * (1 - frac)).toFixed(2) + '"/>' +
+    '</svg>' +
+    '<div class="ringtxt"><div class="ringlabel">' + (isRest ? '休息' : (s.phase === 'working' ? '保持' : '目标')) + '</div>' +
+    '<div class="bignum' + (String(num).length >= 4 ? ' sm' : '') + '" id="bignum">' + num + '</div>' +
+    '<div class="bigunit">' + unit + '</div>' +
+    nextInfo + '</div></div>';
+
+  h += quoteHTML(s.phase === 'resting');
+
+  if (s.phase !== 'resting') {
+    h += '<details class="thow"><summary>动作要点 / 常见错误</summary><div class="body">' +
+      esc(ex.how || '') + (ex.tip ? '<div class="tip">' + esc(ex.tip) + '</div>' : '') +
+      '</div></details>';
+  } else {
+    h += '<div style="height:6px"></div>';
+  }
+
+  h += '<div class="tactions">';
+  if (s.phase === 'resting') {
+    h += '<button class="btn rest" data-act="skip">跳过休息</button>';
+    h += '<div class="row"><button class="btn ghost sm" data-act="addrest" data-s="15">+15 秒</button>' +
+      '<button class="btn ghost sm" data-act="addrest" data-s="30">+30 秒</button></div>';
+  } else if (s.phase === 'working') {
+    h += '<button class="btn primary" data-act="primary">提前结束这一组</button>';
+  } else {
+    var bt = (ex.m === 't') ? ('开始 · ' + targetText(ex)) : ('完成这一组 · ' + targetText(ex));
+    h += '<button class="btn primary" data-act="primary">' + bt + '</button>';
+    h += '<button class="btn ghost sm" data-act="undo">撤销上一组</button>';
+  }
+  h += '</div></div>';
+  return h;
+}
+
+function viewDone() {
+  var r = S.done || { day: '训练', dur: 0, sets: 0, items: [] };
+  var durNum = r.dur < 60 ? r.dur : Math.round(r.dur / 60);
+  var durUnit = r.dur < 60 ? '秒' : '分钟';
+  var h = '<div style="flex:1;display:flex;flex-direction:column;gap:14px;padding:12px 0 10px">';
+  h += '<div><div class="chip">完成</div><h1 class="h1" style="margin:14px 0 6px">' + esc(r.day) + '</h1>' +
+    '<p class="sub">' + (r.sets ? '这一练记下了。' : '没有记录到有效组数。') + '</p></div>';
+  h += '<div class="card"><div class="stat3">' +
+    '<div><div class="v">' + durNum + '</div><div class="k">' + durUnit + '</div></div>' +
+    '<div><div class="v">' + r.sets + '</div><div class="k">组数</div></div>' +
+    '<div><div class="v">' + (r.items ? r.items.length : 0) + '</div><div class="k">动作数</div></div>' +
+    '</div></div>';
+  if (r.items && r.items.length) {
+    h += '<div class="card">';
+    r.items.forEach(function (it) {
+      h += '<div class="li"><div class="mid"><div class="nm">' + esc(it.n) + '</div>' +
+        '<div class="dt">' + it.v.length + ' 组 · ' + it.v.join(' / ') + ' ' + esc(it.u || '') + '</div></div></div>';
+    });
+    h += '</div>';
+  }
+  h += '<button class="btn primary" style="margin-top:auto" data-act="go" data-v="home">回到首页</button>';
+  h += '</div>';
+  return h;
+}
+
+function viewPlans() {
+  var h = '<div class="between" style="padding:4px 2px 16px"><div><h1 class="h1">计划</h1>' +
+    '<p class="sub" style="margin-top:2px">选一个，或导入你自己的</p></div></div>';
+
+  var list = allPlans();
+  list.forEach(function (p) {
+    var on = p.id === S.planId;
+    h += '<div class="card stack" style="margin-bottom:12px;' + (on ? 'border-color:var(--accent)' : '') + '">' +
+      '<div class="between"><div style="min-width:0"><div class="h2">' + esc(p.name) + '</div>' +
+      '<div class="small" style="margin-top:4px">' + esc(p.sub || '') + '</div></div>' +
+      (on ? '<span class="chip">当前</span>' : '') + '</div>' +
+      '<div class="tagrow"><span class="chip gray">' + esc(p.freq || '') + '</span>' +
+      '<span class="chip gray">' + (p.days ? p.days.length : 0) + ' 个训练日</span>' +
+      '<span class="chip gray">' + totalAllSets(p) + ' 组</span></div>' +
+      '<div class="row">' +
+      '<button class="btn ghost sm" data-act="plan" data-id="' + esc(p.id) + '">查看 / 调整</button>' +
+      (on ? '' : '<button class="btn sm" style="background:var(--accent);color:#fff" data-act="plansel" data-id="' + esc(p.id) + '">用这个</button>') +
+      '</div></div>';
+  });
+
+  h += '<div class="card stack" style="margin-top:4px">' +
+    '<div class="h2" style="font-size:15px">导入自己的计划</div>' +
+    '<div class="small">支持 JSON。把计划发我，或按模板改好粘进来，一次导入、长期可用。</div>' +
+    '<div class="row"><button class="btn ghost sm" data-act="import">粘贴 / 选文件导入</button>' +
+    '<button class="btn ghost sm" data-act="exportpl">导出当前计划</button></div>' +
+    '</div>';
+  return h;
+}
+
+function totalAllSets(p) {
+  var n = 0;
+  (p.days || []).forEach(function (d) { n += totalSetsOfDay(d); });
+  return n;
+}
+
+function viewPlanDetail() {
+  var p = getPlan(S.planOpen);
+  if (!p) return '<div class="empty">计划不存在</div>';
+  var h = '<div class="row" style="padding:4px 0 14px"><button class="xbtn" data-act="go" data-v="plans">‹</button>' +
+    '<div><div class="h2">' + esc(p.name) + '</div><div class="small">' + esc(p.sub || '') + '</div></div></div>';
+
+  h += '<div class="small" style="margin-bottom:10px">点 −/+ 直接改组数、目标、休息秒数。改动会存成你自己的版本。</div>';
+
+  p.days.forEach(function (day, di) {
+    h += '<div class="card" style="margin-bottom:12px">' +
+      '<div class="between" style="margin-bottom:6px"><div class="h2" style="font-size:16px">' + esc(day.name) + '</div>' +
+      '<span class="chip gray">' + (dowLabel(day) ? dowLabel(day) + ' · ' : '') + totalSetsOfDay(day) + ' 组</span></div>';
+    if (day.circuit) h += '<div class="small" style="margin-bottom:6px">循环训练：按轮走完所有动作，一轮结束长休息 ' + (day.roundRest || 60) + ' 秒</div>';
+
+    day.exercises.forEach(function (ex, ei) {
+      h += '<div style="padding:12px 0;border-top:1px solid var(--line)">' +
+        '<div class="between"><div class="nm" style="font-size:15px;font-weight:600">' + esc(ex.n) + '</div>' +
+        '<div class="small">' + targetText(ex) + ' × ' + (ex.sets || 1) + (day.circuit ? ' 轮' : ' 组') + '</div></div>' +
+        '<div class="row" style="margin-top:8px;gap:14px;flex-wrap:wrap">' +
+        stepper('组', p.id, di, ei, 'sets', 1, 1, 8) +
+        stepper(ex.m === 't' ? '秒' : '次', p.id, di, ei, 't', ex.m === 't' ? 5 : 1, 1, 600) +
+        stepper('休', p.id, di, ei, 'rest', 5, 0, 300) +
+        '</div></div>';
+    });
+    h += '</div>';
+  });
+
+  return h;
+}
+
+function stepper(label, pid, di, ei, field, step, min, max) {
+  var p = getPlan(pid);
+  var ex = p.days[di].exercises[ei];
+  var v = field === 'rest' ? (ex.rest || 0) : ex[field];
+  return '<div class="stepper"><span class="small" style="min-width:auto;color:var(--sub)">' + label + '</span>' +
+    '<button data-act="adj" data-id="' + esc(pid) + '" data-di="' + di + '" data-ei="' + ei + '" data-f="' + field + '" data-d="-1">−</button>' +
+    '<span>' + v + '</span>' +
+    '<button data-act="adj" data-id="' + esc(pid) + '" data-di="' + di + '" data-ei="' + ei + '" data-f="' + field + '" data-d="1">+</button>' +
+    '</div>';
+}
+
+function viewHistory() {
+  var st = stats();
+  var h = '<div class="between" style="padding:4px 2px 16px"><div><h1 class="h1">记录</h1>' +
+    '<p class="sub" style="margin-top:2px">都在你这台设备上</p></div></div>';
+
+  h += '<div class="card stack">' +
+    '<div class="stat3">' +
+    '<div><div class="v">' + st.count + '</div><div class="k">训练次数</div></div>' +
+    '<div><div class="v">' + st.total + '</div><div class="k">累计组数</div></div>' +
+    '<div><div class="v">' + Math.round(st.totalDur / 60) + '</div><div class="k">累计分钟</div></div>' +
+    '</div></div>';
+
+  h += '<div class="card" style="margin-top:12px"><div class="between" style="margin-bottom:10px">' +
+    '<span class="h2" style="font-size:15px">近 12 周</span><span class="small">' + st.streak + ' 天连续</span></div>' +
+    '<div class="heat">' + heatCells() + '</div></div>';
+
+  h += '<div class="card" style="margin-top:12px">';
+  if (!DB.history.length) {
+    h += '<div class="empty">还没有记录。练一次，这里就有东西了。</div>';
+  } else {
+    DB.history.slice(0, 40).forEach(function (r) {
+      var open = S.openRec === r.id;
+      h += '<div class="li" data-act="rec" data-id="' + esc(r.id) + '" style="cursor:pointer">' +
+        '<div class="mid"><div class="nm">' + esc(r.day) + '</div>' +
+        '<div class="dt">' + fmtDate(r.d) + ' · ' + r.sets + ' 组 · ' + fmtDur(r.dur) + '</div></div>' +
+        '<div class="small">' + (open ? '收起' : '明细') + '</div></div>';
+      if (open) {
+        var det = '<div style="padding:0 0 12px 26px">';
+        (r.items || []).forEach(function (it) {
+          det += '<div class="dt" style="margin:4px 0">' + esc(it.n) + '：' + it.v.join(' / ') + ' ' + esc(it.u || '') + '</div>';
+        });
+        det += '<div class="row" style="margin-top:6px">' +
+          '<button class="btn ghost tiny" data-act="editdate" data-id="' + esc(r.id) + '">改日期</button>' +
+          '<button class="btn ghost tiny" data-act="del" data-id="' + esc(r.id) + '">删除这条</button></div></div>';
+        h += det;
+      }
+    });
+  }
+  h += '</div>';
+
+  h += '<div class="card stack" style="margin-top:12px">' +
+    '<div class="h2" style="font-size:15px">设置</div>' +
+    '<div class="between"><div class="small">组间歇结束 / 倒计时提示音</div>' +
+    '<button class="btn tiny ' + (DB.settings.sound ? '' : 'ghost') + '" data-act="toggle" data-k="sound">' + (DB.settings.sound ? '开' : '关') + '</button></div>' +
+    '<div class="between"><div class="small">震动反馈</div>' +
+    '<button class="btn tiny ' + (DB.settings.vib ? '' : 'ghost') + '" data-act="toggle" data-k="vib">' + (DB.settings.vib ? '开' : '关') + '</button></div>' +
+    '<div class="between"><div class="small">训练页语录（越到后面越狠）</div>' +
+    '<button class="btn tiny ' + (quotesOn() ? '' : 'ghost') + '" data-act="toggle" data-k="quotes">' + (quotesOn() ? '开' : '关') + '</button></div>' +
+    '<div class="between"><div class="small">导出全部记录（换机、备份用）</div>' +
+    '<button class="btn tiny ghost" data-act="backup">导出</button></div>' +
+    '<div class="between"><div class="small">从备份文件恢复记录</div>' +
+    '<button class="btn tiny ghost" data-act="restore">恢复</button></div>' +
+    '</div>';
+
+  h += '<div class="empty small" style="padding:18px 0 6px">数据保存在浏览器本地，清缓存或换设备会丢，重要记录记得导出备份。</div>';
+  return h;
+}
+
+function viewModal() {
+  var m = S.modal;
+  if (!m) return '';
+
+  if (m === 'days') {
+    var plan = getPlan(S.planId);
+    var h = '<div class="modal" data-act="closemodal"><div class="mbox">' +
+      '<div class="between" style="margin-bottom:12px"><div class="h2">选一天开始</div>' +
+      '<button class="btn tiny ghost" data-act="closemodal">关闭</button></div>';
+    plan.days.forEach(function (d, i) {
+      var num = (d.dow && d.dow.length) ? DOW_ONE[d.dow[0]] : (i + 1);
+      var sub = (d.dow && d.dow.length ? dowLabel(d) + ' · ' : '') +
+        d.exercises.length + ' 个动作 · 约 ' + (d.min || 25) + ' 分钟';
+      h += '<div class="daycard" data-act="startday" data-i="' + i + '">' +
+        '<div class="dnum">' + num + '</div>' +
+        '<div class="mid"><div class="nm" style="font-size:15px;font-weight:600">' + esc(d.name) + '</div>' +
+        '<div class="dt">' + sub + '</div></div>' +
+        '<div class="small">开始 ›</div></div>';
+    });
+    return h + '</div></div>';
+  }
+
+  if (m === 'import') {
+    return '<div class="modal" data-act="closemodal"><div class="mbox">' +
+      '<div class="between" style="margin-bottom:10px"><div class="h2">导入计划</div>' +
+      '<button class="btn tiny ghost" data-act="closemodal">关闭</button></div>' +
+      '<div class="small" style="margin-bottom:10px">把 JSON 粘进下面，或从文件选择。格式点下面「载入模板」看。</div>' +
+      '<textarea id="impbox" placeholder="{&quot;name&quot;:&quot;我的计划&quot;,&quot;days&quot;:[...]}"></textarea>' +
+      '<div class="row" style="margin-top:10px"><button class="btn ghost sm" data-act="tpl">载入模板</button>' +
+      '<button class="btn ghost sm" data-act="pickfile">选文件</button></div>' +
+      '<button class="btn primary" style="margin-top:10px;min-height:52px" data-act="doimport">导入</button>' +
+      '<input type="file" id="fimp" accept=".json,application/json" style="display:none">' +
+      '</div></div>';
+  }
+  if (m === 'restore') {
+    return '<div class="modal" data-act="closemodal"><div class="mbox">' +
+      '<div class="between" style="margin-bottom:10px"><div class="h2">从备份恢复</div>' +
+      '<button class="btn tiny ghost" data-act="closemodal">关闭</button></div>' +
+      '<div class="small" style="margin-bottom:10px">把导出的备份文件选中，或把内容粘进下面。已有的记录不会重复，只补充缺的。</div>' +
+      '<textarea id="rstbox" placeholder="粘贴备份 JSON 内容，或点下面「选文件」"></textarea>' +
+      '<div class="row" style="margin-top:10px"><button class="btn ghost sm" data-act="pickfile2">选文件</button></div>' +
+      '<button class="btn primary" style="margin-top:10px;min-height:52px" data-act="dorestore">恢复</button>' +
+      '<input type="file" id="fimp2" accept=".json,application/json" style="display:none">' +
+      '</div></div>';
+  }
+  if (m === 'date') {
+    var rec0 = null;
+    for (var i0 = 0; i0 < DB.history.length; i0++) {
+      if (DB.history[i0].id === S.editing) rec0 = DB.history[i0];
+    }
+    var dv = rec0 ? rec0.d : dstr(new Date());
+    return '<div class="modal" data-act="closemodal"><div class="mbox">' +
+      '<div class="between" style="margin-bottom:12px"><div class="h2">改训练日期</div>' +
+      '<button class="btn tiny ghost" data-act="closemodal">关闭</button></div>' +
+      '<div class="small" style="margin-bottom:12px">只改这条记录归到哪一天，训练内容和时长都不变。</div>' +
+      '<input type="date" id="dbox" value="' + dv + '" class="datein">' +
+      '<button class="btn primary" style="margin-top:12px;min-height:52px" data-act="savedate">保存</button>' +
+      '</div></div>';
+  }
+  return '';
+}
+
+function render() {
+  var root = document.getElementById('root');
+  var html = '';
+  if (S.view === 'train') {
+    root.className = 'full';
+    html = viewTrain();
+  } else {
+    root.className = '';
+    if (S.view === 'home') html = viewHome();
+    else if (S.view === 'plans') html = viewPlans();
+    else if (S.view === 'plan') html = viewPlanDetail();
+    else if (S.view === 'history') html = viewHistory();
+    else if (S.view === 'done') html = viewDone();
+    html += tabbar();
+  }
+  html += viewModal();
+  root.innerHTML = html;
+  if (S.session && (S.session.phase === 'resting' || S.session.phase === 'working')) startTicker();
+}
+
+/* =========================================================
+   11. 交互
+   ========================================================= */
+document.addEventListener('click', function (e) {
+  var el = e.target.closest('[data-act]');
+  if (!el) return;
+  var a = el.getAttribute('data-act');
+
+  if (a === 'go') { S.view = el.getAttribute('data-v'); S.modal = null; render(); return; }
+  if (a === 'start') {
+    var tp = todayPick(getPlan(S.planId));
+    if (tp) startSession(S.planId, tp.idx);
+    return;
+  }
+  if (a === 'pickDay') { S.modal = 'days'; render(); return; }
+  if (a === 'startday') { startSession(S.planId, +el.getAttribute('data-i')); return; }
+  if (a === 'closemodal') {
+    if (e.target === el) { S.modal = null; render(); }
+    else if (el.classList.contains('btn')) { S.modal = null; render(); }
+    return;
+  }
+  if (a === 'primary') { primary(); return; }
+  if (a === 'undo') { undo(); return; }
+  if (a === 'skip') { skipRest(); return; }
+  if (a === 'addrest') { addRest(+el.getAttribute('data-s')); return; }
+  if (a === 'quit') { quitSession(); return; }
+
+  if (a === 'plan') { S.planOpen = el.getAttribute('data-id'); S.view = 'plan'; render(); return; }
+  if (a === 'plansel') {
+    S.planId = el.getAttribute('data-id');
+    save(); S.view = 'home'; render();
+    return;
+  }
+  if (a === 'adj') {
+    var pid = el.getAttribute('data-id');
+    var di = +el.getAttribute('data-di');
+    var ei = +el.getAttribute('data-ei');
+    var f = el.getAttribute('data-f');
+    var d = +el.getAttribute('data-d');
+    var p = ensureEditable(pid);
+    if (!p) return;
+    var ex = p.days[di].exercises[ei];
+    if (f === 'sets') ex.sets = Math.max(1, Math.min(10, (ex.sets || 1) + d));
+    if (f === 't') ex.t = Math.max(1, Math.min(900, (ex.t || 1) + d * (ex.m === 't' ? 5 : 1)));
+    if (f === 'rest') ex.rest = Math.max(0, Math.min(300, (ex.rest || 0) + d * 5));
+    save(); render();
+    return;
+  }
+
+  if (a === 'import') {
+    S.modal = 'import'; render();
+    setTimeout(function () {
+      var box = document.getElementById('impbox');
+      if (!box) return;
+      box.focus();
+    }, 60);
+    return;
+  }
+  if (a === 'doimport') { doImport(); return; }
+  if (a === 'tpl') {
+    var box2 = document.getElementById('impbox');
+    if (box2) box2.value = JSON.stringify(templatePlan(), null, 2);
+    return;
+  }
+  if (a === 'pickfile') {
+    var f = document.getElementById('fimp');
+    if (f) f.click();
+    return;
+  }
+  if (a === 'pickfile2') {
+    var f2 = document.getElementById('fimp2');
+    if (f2) f2.click();
+    return;
+  }
+  if (a === 'restore') {
+    S.modal = 'restore'; render();
+    return;
+  }
+  if (a === 'dorestore') { doRestore(); return; }
+  if (a === 'exportpl') { exportPlan(); return; }
+
+  if (a === 'rec') {
+    var rid = el.getAttribute('data-id');
+    S.openRec = (S.openRec === rid) ? null : rid;
+    render();
+    return;
+  }
+  if (a === 'editdate') {
+    S.editing = el.getAttribute('data-id');
+    S.modal = 'date';
+    render();
+    return;
+  }
+  if (a === 'savedate') { saveDate(); return; }
+  if (a === 'del') {
+    var did = el.getAttribute('data-id');
+    if (confirm('删除这条记录？')) {
+      DB.history = DB.history.filter(function (r) { return r.id !== did; });
+      S.openRec = null; save(); render();
+    }
+    return;
+  }
+  if (a === 'toggle') {
+    var k = el.getAttribute('data-k');
+    DB.settings[k] = !DB.settings[k];
+    save(); render();
+    return;
+  }
+  if (a === 'backup') { backupAll(); return; }
+});
+
+document.addEventListener('change', function (e) {
+  if (!e.target) return;
+  if (e.target.id === 'fimp') {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      var box = document.getElementById('impbox');
+      if (box) box.value = String(rd.result || '');
+    };
+    rd.readAsText(file);
+  }
+  if (e.target.id === 'fimp2') {
+    var file2 = e.target.files && e.target.files[0];
+    if (!file2) return;
+    var rd2 = new FileReader();
+    rd2.onload = function () {
+      var box2 = document.getElementById('rstbox');
+      if (box2) box2.value = String(rd2.result || '');
+    };
+    rd2.readAsText(file2);
+  }
+});
+
+document.addEventListener('visibilitychange', function () {
+  if (!document.hidden && S.session) {
+    if (S.session.phase === 'resting' || S.session.phase === 'working') startTicker();
+    onTick();
+  }
+});
+
+/* =========================================================
+   12. 导入 / 导出
+   ========================================================= */
+function templatePlan() {
+  return {
+    id: 'my' + Date.now(),
+    name: '我的计划',
+    sub: '自己排的',
+    freq: '每周 3 次',
+    days: [{
+      name: 'Day 1',
+      min: 25,
+      circuit: false,
+      exercises: [
+        { n: '椅子坐站', m: 'r', t: 12, sets: 3, rest: 60, how: '动作说明写这里', tip: '要点写这里' },
+        { n: '平板支撑', m: 't', t: 30, sets: 3, rest: 45, how: '计时类动作 m 用 t', tip: 't 是秒数' }
+      ]
+    }]
+  };
+}
+
+function doImport() {
+  var box = document.getElementById('impbox');
+  if (!box) return;
+  var txt = (box.value || '').trim();
+  if (!txt) { alert('先把 JSON 粘进来'); return; }
+  var obj;
+  try { obj = JSON.parse(txt); }
+  catch (err) { alert('JSON 格式有误：' + err.message); return; }
+
+  if (!obj || !obj.name || !Array.isArray(obj.days) || !obj.days.length) {
+    alert('至少要有 name 和 days 两个字段，days 不能为空');
+    return;
+  }
+  var ok = true;
+  obj.days.forEach(function (d) {
+    if (!d || !Array.isArray(d.exercises) || !d.exercises.length) ok = false;
+    (d.exercises || []).forEach(function (e) {
+      if (!e.n) ok = false;
+      if (e.m !== 't') e.m = 'r';
+      e.t = +e.t || 10;
+      e.sets = Math.max(1, +e.sets || 3);
+      e.rest = Math.max(0, +e.rest || 45);
+      if (!d.name) d.name = '未命名';
+      if (!d.min) d.min = 25;
+    });
+  });
+  if (!ok) { alert('每天的 exercises 不能为空，每个动作要有 n（名字）'); return; }
+
+  if (!obj.id) obj.id = 'imp' + Date.now();
+  DB.plans[obj.id] = obj;
+  S.planId = obj.id;
+  S.modal = null;
+  S.view = 'home';
+  save();
+  render();
+  alert('导入成功：' + obj.name + '（' + obj.days.length + ' 个训练日）');
+}
+
+function saveDate() {
+  var box = document.getElementById('dbox');
+  if (!box) return;
+  var v = (box.value || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) { alert('请先选一个日期'); return; }
+  var rec = null;
+  for (var i = 0; i < DB.history.length; i++) {
+    if (DB.history[i].id === S.editing) rec = DB.history[i];
+  }
+  if (!rec) { S.modal = null; render(); return; }
+  var old = new Date(rec.ts || Date.now());
+  var p = v.split('-');
+  rec.ts = new Date(+p[0], +p[1] - 1, +p[2], old.getHours(), old.getMinutes(), old.getSeconds()).getTime();
+  rec.d = v;
+  DB.history.sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+  S.modal = null;
+  S.editing = null;
+  save();
+  render();
+}
+
+function doRestore() {
+  var box = document.getElementById('rstbox');
+  if (!box) return;
+  var txt = (box.value || '').trim();
+  if (!txt) { alert('先选中备份文件，或把备份内容粘进来'); return; }
+  var o;
+  try { o = JSON.parse(txt); }
+  catch (err) { alert('文件格式不对：' + err.message); return; }
+
+  var incoming = [];
+  if (Array.isArray(o)) incoming = o;
+  else if (o && Array.isArray(o.history)) incoming = o.history;
+  else if (o && o.ts && o.sets != null) incoming = [o];
+
+  if (!incoming.length) { alert('这份文件里没有训练记录'); return; }
+
+  var exist = {};
+  DB.history.forEach(function (r) { exist[r.id] = 1; });
+
+  var add = 0;
+  incoming.forEach(function (raw) {
+    if (!raw || typeof raw !== 'object') return;
+    var r = raw;
+    r.sets = +r.sets || 0;
+    r.dur = +r.dur || 0;
+    r.ts = +r.ts || Date.now();
+    if (!r.d) r.d = dstr(new Date(r.ts));
+    if (!r.id) r.id = 'r' + r.ts + Math.random().toString(36).slice(2, 7);
+    if (exist[r.id]) return;
+    exist[r.id] = 1;
+    DB.history.push(r);
+    add++;
+  });
+
+  var planAdd = 0;
+  if (o && o.plans && typeof o.plans === 'object') {
+    for (var k in o.plans) {
+      if (o.plans.hasOwnProperty(k) && !DB.plans[k]) { DB.plans[k] = o.plans[k]; planAdd++; }
+    }
+  }
+
+  DB.history.sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+  save();
+  S.modal = null;
+  S.view = 'history';
+  render();
+  alert('恢复完成：新增 ' + add + ' 条记录' + (planAdd ? ('、' + planAdd + ' 个计划') : '') +
+    '。现在共 ' + DB.history.length + ' 条。');
+}
+
+function download(name, text, mime) {
+  try {
+    var blob = new Blob([text], { type: mime || 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+  } catch (e) { alert('导出失败，可改用复制粘贴：\n' + text.slice(0, 300)); }
+}
+
+function exportPlan() {
+  var p = getPlan(S.planId);
+  if (!p) return;
+  download('计划_' + (p.name || 'plan') + '.json', JSON.stringify(p, null, 2));
+}
+
+function backupAll() {
+  download('训练记录备份_' + dstr(new Date()) + '.json', JSON.stringify(DB, null, 2));
+}
+
+/* =========================================================
+   13. 启动
+   ========================================================= */
+load();
+if (!getPlan(S.planId)) S.planId = (allPlans()[0] || {}).id || 'base';
+render();
+
+/* 离线缓存：只有 http/https 下才能注册（file:// 不行，本地双击打开时静默跳过） */
+if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+
+</script>
+</body>
+</html>
